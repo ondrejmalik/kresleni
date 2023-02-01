@@ -2,77 +2,83 @@
 <head>
 </head>
 <body>
-    <canvas id="canvas" width="800" height="800"></canvas>
-    <div>
-        <input type="color" id="color" value="#000000">
-        <input type="range" id="width">
-    </div>
-    <div>
-        <button id="clearButton">Clear</button>
-        <button id="saveButton">Save</button>
-        <button id="loadButton">Load</button>
-    </div>
-    
+<canvas id="canvas"></canvas>
+<div>
+    <input type="color" id="color" value="#000000">
+    <input type="range" id="width">
+</div>
+<div>
+    <button id="clearButton">Clear</button>
+    <button id="saveButton">Save</button>
+    <button id="loadButton">Load</button>
+</div>
+
 </body>
 <style>
+    body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+    }
 </style>
 <script>
-let lastposX;
-let lastposY;
-var mouseDown = false;
-var canvasData;
+    let lastposX;
+    let lastposY;
+    var mouseDown = false;
+    var canvasData;
 
-const canvas = document.getElementById("canvas");
-const color = document.getElementById("color");
-const width = document.getElementById("width");
-const clearButton = document.getElementById('clearButton');
-const saveButton = document.getElementById('saveButton');
-const loadButton = document.getElementById('loadButton');
-const ctx = canvas.getContext("2d");
+    const canvas = document.getElementById("canvas");
+    const color = document.getElementById("color");
+    const width = document.getElementById("width");
+    const clearButton = document.getElementById('clearButton');
+    const saveButton = document.getElementById('saveButton');
+    const loadButton = document.getElementById('loadButton');
+    const ctx = canvas.getContext("2d");
+    ctx.canvas.width = window.innerWidth;
+    ctx.canvas.height = window.innerHeight - 50;
 
+    function draw() {
+        ctx.beginPath();
+        ctx.strokeStyle = color.value;
+        ctx.lineWidth = width.value / 10;
+        ctx.moveTo(lastposX, lastposY);
+        ctx.lineTo(event.clientX, event.clientY);
+        ctx.stroke();
+        lastposX = event.clientX;
+        lastposY = event.clientY;
+    }
 
-function draw(){
-ctx.beginPath(); 
-ctx.strokeStyle = color.value;
-ctx.lineWidth = width.value/10;
-ctx.moveTo(lastposX-9, lastposY);
-ctx.lineTo(event.clientX-9, event.clientY);
-ctx.stroke();
-lastposX = event.clientX;
-lastposY = event.clientY;
-}
+    document.onmousemove = (event) => {
+        const {
+            clientX,
+            clientY
+        } = event
+        if (mouseDown == true) {
+            draw();
+        }
+    }
+    document.body.onmousedown = function () {
+        lastposX = event.clientX;
+        lastposY = event.clientY;
+        mouseDown = true;
+    }
+    document.body.onmouseup = function () {
+        mouseDown = false;
+    }
 
-document.onmousemove = (event) => {
-  const {
-    clientX,
-    clientY
-  } = event 
-    if(mouseDown == true){draw();}
-}
-document.body.onmousedown = function() {
-    lastposX = event.clientX;
-    lastposY = event.clientY;
-  mouseDown = true;
-}
-document.body.onmouseup = function() {
-  mouseDown = false;
-}
+    clearButton.onclick = function () {
+        const context = canvas.getContext('2d');
+        context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    saveButton.onclick = function () {
+        canvasData = canvas.toDataURL();
+        localStorage.setItem('canvasData', canvasData);
+    }
 
-clearButton.onclick = function()
-{
-    const context = canvas.getContext('2d');
-    context.clearRect(0, 0, canvas.width, canvas.height);
-}
-saveButton.onclick = function()
-{
-    canvasData = canvas.toDataURL();
-}
-
-loadButton.onclick = function()
-{
-    var img = new Image();
-    img.src = canvasData;
-    ctx.drawImage(img,0,0);
-}
+    loadButton.onclick = function () {
+        var img = new Image();
+        img.src = localStorage.getItem('canvasData')
+        ctx.drawImage(img, 0, 0);
+    }
 </script>
 </html>
