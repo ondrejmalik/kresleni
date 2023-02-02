@@ -11,8 +11,13 @@
     <button id="clearButton">Clear</button>
     <button id="saveButton">Save</button>
     <button id="loadButton">Load</button>
+    <input type="checkbox" id="switch"></input>
+    <label for="switch">bezier/draw</label>
 </div>
-
+    <div id ="startDot"></div>
+    <div id ="endDot"></div>
+    <div id ="cp1Dot"></div>
+    <div id ="cp2Dot"></div>
 </body>
 <style>
     body {
@@ -20,19 +25,45 @@
         height: 100%;
         overflow: hidden;
     }
+    #startDot {
+        position: absolute;
+    }
+    
+    #endDot {
+        position: absolute;
+    }
+    
+    #cp1Dot {
+        position: absolute;
+    }
+    
+    #cp2Dot {
+        position: absolute;
+    }
 </style>
 <script>
     let lastposX;
     let lastposY;
     var mouseDown = false;
     var canvasData;
-
+    let clicked = false;
+    let start = { x: 50,    y: 20  };
+    let cp1 =   { x: 230,   y: 30  };
+    let cp2 =   { x: 150,   y: 80  };
+    let end =   { x: 250,   y: 100 };
+    let count = 0;
+    let switchButtonValue = false;
     const canvas = document.getElementById("canvas");
     const color = document.getElementById("color");
     const width = document.getElementById("width");
     const clearButton = document.getElementById('clearButton');
     const saveButton = document.getElementById('saveButton');
     const loadButton = document.getElementById('loadButton');
+    const switchButton = document.getElementById('switch');
+    const sd = document.getElementById('startDot');
+    const ed = document.getElementById('endDot');
+    const cd1 = document.getElementById('cp1Dot');
+    const cd2 = canvas.getContext("cp2Dot");
     const ctx = canvas.getContext("2d");
     ctx.canvas.width = window.innerWidth;
     ctx.canvas.height = window.innerHeight - 50;
@@ -47,13 +78,70 @@
         lastposX = event.clientX;
         lastposY = event.clientY;
     }
+    function drawBezier() {
+        ctx.beginPath();
+        ctx.strokeStyle = color.value;
+        ctx.lineWidth = width.value / 10;
+        ctx.moveTo(start.x, start.y);
+        ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
+        ctx.stroke();
+        console.log("balls");
 
+        sd.top = start.y;
+        sd.right = start.x;
+
+        ed.top = end.y;
+        ed.right = end.x;
+    }
+    addEventListener('mouseup', (event) => {clicked = false});
+    addEventListener('click', (event) => {
+        const {
+            clientX,
+            clientY
+        } = event
+            clicked = true;
+            console.log("balls");
+        if(switchButtonValue == false)
+            {
+            if(count == 3)
+            {
+                cp2.x = clientX;
+                cp2.y = clientY;
+                count--;
+                clear();
+                drawBezier();
+            }
+            if(count == 2)
+            {
+                cp1.x = clientX;
+                cp1.y = clientY;
+                count++;
+            }
+            if(count == 1)
+            {
+                end.x = clientX;
+                end.y = clientY;
+                count++;
+            }
+            if(count == 0)
+            {
+                start.x = clientX;
+                start.y = clientY;
+                count++;
+            }
+            if(count == -1)
+            {
+                count++;
+            }
+        }
+        
+        });
     document.onmousemove = (event) => {
         const {
             clientX,
             clientY
         } = event
-        if (mouseDown == true) {
+        if (mouseDown == true && switchButtonValue == true) {
             draw();
         }
     }
@@ -66,9 +154,14 @@
         mouseDown = false;
     }
 
-    clearButton.onclick = function () {
+    function clear()
+    {
         const context = canvas.getContext('2d');
         context.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    clearButton.onclick = function () {
+        count = -1;
+        clear();
     }
     saveButton.onclick = function () {
         canvasData = canvas.toDataURL();
@@ -79,6 +172,10 @@
         var img = new Image();
         img.src = localStorage.getItem('canvasData')
         ctx.drawImage(img, 0, 0);
+    }
+    switchButton.onclick = function () {
+        if(switchButtonValue == true){switchButtonValue = false;}
+        else{switchButtonValue = true;}
     }
 </script>
 </html>
