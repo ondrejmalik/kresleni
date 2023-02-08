@@ -14,10 +14,10 @@
     <input type="checkbox" id="switch"></input>
     <label for="switch">bezier/draw</label>
 </div>
-    <div id ="startDot"></div>
-    <div id ="endDot"></div>
-    <div id ="cp1Dot"></div>
-    <div id ="cp2Dot"></div>
+<div id="startDot"></div>
+<div id="endDot"></div>
+<div id="cp1Dot"></div>
+<div id="cp2Dot"></div>
 </body>
 <style>
     body {
@@ -25,18 +25,19 @@
         height: 100%;
         overflow: hidden;
     }
+
     #startDot {
         position: absolute;
     }
-    
+
     #endDot {
         position: absolute;
     }
-    
+
     #cp1Dot {
         position: absolute;
     }
-    
+
     #cp2Dot {
         position: absolute;
     }
@@ -47,12 +48,13 @@
     var mouseDown = false;
     var canvasData;
     let clicked = false;
-    let start = { x: 50,    y: 20  };
-    let cp1 =   { x: 230,   y: 30  };
-    let cp2 =   { x: 150,   y: 80  };
-    let end =   { x: 250,   y: 100 };
+    let start = {x: 50, y: 20};
+    let cp1 = {x: 230, y: 30};
+    let cp2 = {x: 150, y: 80};
+    let end = {x: 250, y: 100};
     let count = 0;
     let switchButtonValue = false;
+    let cpSwitch = false;
     const canvas = document.getElementById("canvas");
     const color = document.getElementById("color");
     const width = document.getElementById("width");
@@ -78,6 +80,7 @@
         lastposX = event.clientX;
         lastposY = event.clientY;
     }
+
     function drawBezier() {
         ctx.beginPath();
         ctx.strokeStyle = color.value;
@@ -85,57 +88,79 @@
         ctx.moveTo(start.x, start.y);
         ctx.bezierCurveTo(cp1.x, cp1.y, cp2.x, cp2.y, end.x, end.y);
         ctx.stroke();
-        console.log("balls");
+        //console.log("balls");
 
-        sd.top = start.y;
-        sd.right = start.x;
+        ctx.fillStyle = 'blue';
+        ctx.beginPath();
+        ctx.arc(start.x, start.y, 5, 0, 2 * Math.PI);  // Start point
+        ctx.arc(end.x, end.y, 5, 0, 2 * Math.PI);      // End point
+        ctx.fill();
 
-        ed.top = end.y;
-        ed.right = end.x;
+// Control points
+        ctx.fillStyle = 'red';
+        ctx.beginPath();
+        ctx.arc(cp1.x, cp1.y, 5, 0, 2 * Math.PI);  // Control point one
+        ctx.arc(cp2.x, cp2.y, 5, 0, 2 * Math.PI);  // Control point two
+        ctx.fill();
     }
-    addEventListener('mouseup', (event) => {clicked = false});
-    addEventListener('click', (event) => {
+
+    addEventListener('mouseup', (event) => {
+        clicked = false;
+    });
+    addEventListener('mousedown', (event) => {
         const {
             clientX,
             clientY
         } = event
+        console.log("balls");
+        if (switchButtonValue == false) {
             clicked = true;
-            console.log("balls");
-        if(switchButtonValue == false)
-            {
-            if(count == 3)
-            {
-                cp2.x = clientX;
-                cp2.y = clientY;
+            if (count == 3) {
+                addEventListener("mousemove", moveCircle);
                 count--;
-                clear();
-                drawBezier();
+                console.log("3");
+                cpSwitch = true;
             }
-            if(count == 2)
-            {
-                cp1.x = clientX;
-                cp1.y = clientY;
+            if (count == 2 && cpSwitch == false) {
+                addEventListener("mousemove", moveCircle);
                 count++;
+                console.log("2");
             }
-            if(count == 1)
-            {
+            if (count == 1) {
                 end.x = clientX;
                 end.y = clientY;
                 count++;
             }
-            if(count == 0)
-            {
+            if (count == 0) {
                 start.x = clientX;
                 start.y = clientY;
                 count++;
             }
-            if(count == -1)
-            {
+            if (count == -1) {
                 count++;
             }
+            cpSwitch = false;
         }
-        
-        });
+
+    });
+
+    function moveCircle(e) {
+        console.log(clicked);
+        if (clicked == true) {
+            e.preventDefault();
+            if (count == 2) {
+                cp1.x = e.clientX;
+                cp1.y = e.clientY;
+            }
+            if (count == 3) {
+                cp2.x = e.clientX;
+                cp2.y = e.clientY;
+            }
+            clear();
+            drawBezier();
+        }
+    }
+
     document.onmousemove = (event) => {
         const {
             clientX,
@@ -154,11 +179,11 @@
         mouseDown = false;
     }
 
-    function clear()
-    {
+    function clear() {
         const context = canvas.getContext('2d');
         context.clearRect(0, 0, canvas.width, canvas.height);
     }
+
     clearButton.onclick = function () {
         count = -1;
         clear();
@@ -174,8 +199,11 @@
         ctx.drawImage(img, 0, 0);
     }
     switchButton.onclick = function () {
-        if(switchButtonValue == true){switchButtonValue = false;}
-        else{switchButtonValue = true;}
+        if (switchButtonValue == true) {
+            switchButtonValue = false;
+        } else {
+            switchButtonValue = true;
+        }
     }
 </script>
 </html>
